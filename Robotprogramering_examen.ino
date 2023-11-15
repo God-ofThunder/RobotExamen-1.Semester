@@ -164,21 +164,19 @@ void setup() {
 bool finished = false;
 void loop() {
 	while(finished != true){
-		LineUP();
-		finished = true;
-//		lineSensors.read(lineSensorValues, useEmitters ? QTR_EMITTERS_ON: QTR_EMITTERS_OFF);
-//		for(int i=0; i<NUM_SENSORS; i+=2)
-//			if(lineSensorValues[i] < surfaceBrightnes[i]-lineTreshHold || lineSensorValues[i] > surfaceBrightnes[i]+lineTreshHold)
-//				finished = true;
-//		if(encoders.getCountsLeft() < encoders.getCountsRight())
-//			motors.setSpeeds(120,40);
-//		else if(encoders.getCountsLeft() > encoders.getCountsRight())
-//			motors.setSpeeds(40,120);
-//		else
-//			motors.setSpeeds(80,80);
-//		delay(100);
-//		//encoders.getCountsAndResetRight();
-//		//encoders.getCountsAndResetLeft();
+		lineSensors.read(lineSensorValues, useEmitters ? QTR_EMITTERS_ON: QTR_EMITTERS_OFF);
+		for(int i=0; i<NUM_SENSORS; i+=2)
+			if(lineSensorValues[i] < surfaceBrightnes[i]-lineTreshHold || lineSensorValues[i] > surfaceBrightnes[i]+lineTreshHold)
+				finished = true;
+		if(encoders.getCountsLeft() < encoders.getCountsRight())
+			motors.setSpeeds(120,40);
+		else if(encoders.getCountsLeft() > encoders.getCountsRight())
+			motors.setSpeeds(40,120);
+		else
+			motors.setSpeeds(80,80);
+		delay(100);
+		//encoders.getCountsAndResetRight();
+		//encoders.getCountsAndResetLeft();
 	}
 	motors.setSpeeds(0,0);
 	display.clear();
