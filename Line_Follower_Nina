@@ -1,0 +1,138 @@
+#include <Wire.h>
+#include <Zumo32U4.h>
+#include <QTRSensors.h>
+
+Zumo32U4Motors motors;
+Zumo32U4LineSensors lineSensors;
+Zumo32U4LCD lcd;
+Zumo32U4IMU imu;
+Zumo32U4Buzzer buzzer;
+Zumo32U4ButtonA buttonA;
+Zumo32U4LCD display;
+
+#define NUM_SENSORS 5
+uint16_t lineSensorValues[NUM_SENSORS];
+uint16_t sensorValues[NUM_SENSORS] = {lineSensorValues[0],lineSensorValues[1],lineSensorValues[2],lineSensorValues[3],lineSensorValues[4]};
+
+int speed = 100;
+int slowSpeed = 40;
+
+
+void printReadingsToSerial(){
+  lineSensors.read(lineSensorValues, QTR_EMITTERS_ON);
+  char buffer[80];
+  sprintf(buffer, "%4d %4d %4d %4d %4d\n",
+    lineSensorValues[0],
+    lineSensorValues[1],
+    lineSensorValues[2],
+    lineSensorValues[3],
+    lineSensorValues[4]
+  );
+  Serial.print(buffer);
+}
+
+// the uncalibrated line sensor reading are between 0 (very bright) and 2000 (very dark)
+void readLineSensors(){
+  lineSensors.read(lineSensorValues, QTR_EMITTERS_ON);
+  printReadingsToSerial();
+}
+
+/* 
+Drive functions
+*/
+void stop(){
+  motors.setSpeeds(0,0);
+}
+
+void forward(){
+  motors.setSpeeds(speed, speed);
+}
+
+void turnLeft(){
+  motors.setSpeeds(slowSpeed, speed);
+  //delay(20);
+}
+
+void turnSharpLeft(){
+  motors.setSpeeds(-speed-50, speed+50);
+  //delay(50);
+}
+
+void turnRight(){
+  motors.setSpeeds(speed, slowSpeed);
+  //delay(20);
+}
+
+void turnSharpRight(){
+  motors.setSpeeds(speed+50, -speed-50);
+  //delay(50);
+  
+}
+/* void calibrateSensors()
+{
+  // Wait 1 second and then begin automatic sensor calibration
+  // by rotating in place to sweep the sensors over the line
+  delay(1000);
+  for(uint16_t i = 0; i < 120; i++)
+  {
+    if (i > 30 && i <= 90)
+    {
+      motors.setSpeeds(-200, 200);
+    }
+    else
+    {
+      motors.setSpeeds(200, -200);
+    }
+
+    lineSensors.calibrate();
+  }
+  motors.setSpeeds(0, 0);
+} */
+
+void setup() {
+  lineSensors.initFiveSensors();
+  Serial.begin(9600);
+  delay(100);
+  printReadingsToSerial();
+  lcd.clear();
+  buttonA.waitForButton(); //den er god at have med, fordi loopet starter først når der er trykket 
+  buttonA.getSingleDebouncedRelease();
+  while (buttonA.getSingleDebouncedRelease() != true){
+    lineSensors.read(sensorValues, QTR_EMITTERS_ON);
+    delay(10);
+    break;
+  }
+  readLineSensors();
+  sensorValues[0] = lineSensorValues[0];
+  sensorValues[1] = lineSensorValues[1];
+  sensorValues[3] = lineSensorValues[3];
+  sensorValues[4] = lineSensorValues[4];
+  display.clear();
+  display.gotoXY(0,0);
+  display.print(sensorValues[0]);
+  display.print(" ");
+  display.print(sensorValues[1]);
+  display.gotoXY(0,1);
+  display.print(sensorValues[3]);
+  display.print(" ");
+  display.print(sensorValues[4]);
+}
+
+
+
+void loop() {
+  readLineSensors();
+  forward();
+  while (lineSensorValues[0] > sensorValues[0]+80){
+    readLineSensors();
+    turnSharpLeft();}
+  while (lineSensorValues[1] > sensorValues[1]+80) {
+    readLineSensors();
+    turnLeft();}
+  while (lineSensorValues[3] > sensorValues[3]+80) {
+    readLineSensors();
+    turnRight();}
+  while (lineSensorValues[4] > sensorValues[4]+80) {
+    readLineSensors();
+    turnSharpRight();}
+}
