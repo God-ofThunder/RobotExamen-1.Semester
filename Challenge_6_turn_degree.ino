@@ -62,9 +62,18 @@ void alignVithTape(){
   driveToTape();
  lineSensors.read(lineSensorValues, QTR_EMITTERS_ON);   // læser værdier 0=lys  2000=mørk
  printReadinToSerial();
-   if (lineSensorValues[2]>surfaceBrightnes[2]+lineTreshold){
-    motors.setSpeeds(0,0);
-    delay(500);
+    if (lineSensorValues[2]>surfaceBrightnes[2]+lineTreshold){
+      motors.setSpeeds(0,0);
+      if (lineSensorValues[0]>surfaceBrightnes[0]+lineTreshold && lineSensorValues[4]>surfaceBrightnes[4]+lineTreshold){
+        return;
+      }
+      else if (lineSensorValues[3]>surfaceBrightnes[3]+lineTreshold && lineSensorValues[1]<surfaceBrightnes[1]+lineTreshold){
+        motors.setSpeeds(50,-50);
+      }
+      else if (lineSensorValues[1]>surfaceBrightnes[1]+lineTreshold && lineSensorValues[3]<surfaceBrightnes[3]+lineTreshold){
+        motors.setSpeeds(-50,50);
+      }
+      delay(500);
     }
     else if (lineSensorValues[1]>surfaceBrightnes[1]+lineTreshold){
       motors.setSpeeds(-50,50);
@@ -99,7 +108,11 @@ void setup() {               // setup kører en gang
   for (int i=0; i<100; i++){
     alignVithTape();
   }
-
+  delay(1000);
+  motors.setSpeeds(0,75);
+  delay(1200);
+  alignVithTape();
+  
 }
 
 
